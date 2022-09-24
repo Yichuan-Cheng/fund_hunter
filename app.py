@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 page_size=10
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path. join(app.root_path,'data.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////' + os.path. join(app.root_path,'data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["JSON_AS_ASCII"] = False
 db = SQLAlchemy(app)
@@ -27,12 +27,12 @@ class Fund(db.Model):
     fund_rates=db.Column(db.String(300))#基金增长率序列
     fund_values=db.Column(db.String(300))#基金单位净值序列
     fund_all_values=db.Column(db.String(300))#基金累计净值序列
-    fund_profit_std=db.Column(db.String(6))# 收益率标准差
-    fund_beta=db.Column(db.String(15))# 贝塔系数
-    fund_r_mean=db.Column(db.String(15))# 平均收益率
-    fund_treynor=db.Column(db.String(15))# treynor系数
-    fund_sharpe=db.Column(db.String(15))# sharpe系数
-    fund_jense=db.Column(db.String(15))# jense系数
+    fund_profit_std=db.Column(db.String(50))# 收益率标准差
+    fund_beta=db.Column(db.String(50))# 贝塔系数
+    fund_r_mean=db.Column(db.String(50))# 平均收益率
+    fund_treynor=db.Column(db.String(50))# treynor系数
+    fund_sharpe=db.Column(db.String(50))# sharpe系数
+    fund_jense=db.Column(db.String(50))# jense系数
 
 class Company(db.Model):
     company_name=db.Column(db.String(25), primary_key=True)# 公司名称
@@ -149,12 +149,12 @@ def get_all_fund(page_num):
             'fund_rates':tmp[i].fund_rates,
             'fund_values':tmp[i].fund_values,
             'fund_all_values':tmp[i].fund_all_values,
-            'fund_profit_std':tmp[i].fund_profit_std,
-            'fund_beta':tmp[i].fund_beta,
-            'fund_r_mean':tmp[i].fund_r_mean,
-            'fund_treynor':tmp[i].fund_treynor,
-            'fund_sharpe':tmp[i].fund_sharpe,
-            'fund_jense':tmp[i].fund_jense
+            'fund_profit_std':tmp[i].fund_profit_std[:5],
+            'fund_beta':tmp[i].fund_beta[:5],
+            'fund_r_mean':tmp[i].fund_r_mean[:5],
+            'fund_treynor':tmp[i].fund_treynor[:5],
+            'fund_sharpe':tmp[i].fund_sharpe[:5],
+            'fund_jense':tmp[i].fund_jense[:5]
         } 
         for i in range(len(tmp))
     }
@@ -189,12 +189,12 @@ def get_fund_by_name(id):
         'fund_rates':tmp.fund_rates,
         'fund_values':tmp.fund_values,
         'fund_all_values':tmp.fund_all_values,
-        'fund_profit_std':tmp.fund_profit_std,
-        'fund_beta':tmp.fund_beta,
-        'fund_r_mean':tmp.fund_r_mean,
-        'fund_treynor':tmp.fund_treynor,
-        'fund_sharpe':tmp.fund_sharpe,
-        'fund_jense':tmp.fund_jense
+        'fund_profit_std':tmp.fund_profit_std[:5],
+        'fund_beta':tmp.fund_beta[:5],
+        'fund_r_mean':tmp.fund_r_mean[:5],
+        'fund_treynor':tmp.fund_treynor[:5],
+        'fund_sharpe':tmp.fund_sharpe[:5],
+        'fund_jense':tmp.fund_jense[:5]
     } 
 
 @app.route('/get_fund_count',methods=['post','get'])
@@ -207,4 +207,4 @@ def get_company_count():
 
 
 if(__name__=='__main__'):
-    app.run()
+    app.run('0.0.0.0',port=80,debug=False)

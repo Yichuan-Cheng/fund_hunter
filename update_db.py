@@ -1,4 +1,4 @@
-fund_num=10
+fund_num=500
 period=31
 
 from app import *
@@ -8,8 +8,7 @@ db.create_all()
 import akshare as ak
 import tqdm
 
-tmp=ak.fund_em_aum()
-tmp=tmp.astype('str')
+tmp=ak.fund_em_aum().astype('str')
 insert_company(tmp['基金公司'].values,tmp['成立时间'].values,tmp['全部基金数'].values,tmp['更新日期'].values)
 
 
