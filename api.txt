@@ -1,0 +1,5 @@
+demo:
+http://119.91.140.223/all_company/company_name/0/1
+http://119.91.140.223/all_fund/fund_id/0/1
+
+company_name和fund_id是按照排序的属性名字，后面的0表示升序排列，更换成其他数字变成降序排列，最后的数字为页码
