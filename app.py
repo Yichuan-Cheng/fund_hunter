@@ -1,11 +1,17 @@
 from flask import Flask
 import os 
 from flask_sqlalchemy import SQLAlchemy
+import sys
 
 page_size=10
 
+WIN = sys.platform.startswith('win')
+if WIN: # 如果是 Windows 系统，使用三个斜线
+    prefix = 'sqlite:///'
+else: # 否则使用四个斜线
+    prefix = 'sqlite:////'
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////' + os.path. join(app.root_path,'data.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = prefix + os.path. join(app.root_path,'data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["JSON_AS_ASCII"] = False
 db = SQLAlchemy(app)
@@ -33,6 +39,8 @@ class Fund(db.Model):
     fund_treynor=db.Column(db.String(50))# treynor系数
     fund_sharpe=db.Column(db.String(50))# sharpe系数
     fund_jense=db.Column(db.String(50))# jense系数
+    fund_pred_week=db.Column(db.String(6))#预测基金周增长率
+    fund_pred_month=db.Column(db.String(6))#预测基金月增长率
 
 class Company(db.Model):
     company_name=db.Column(db.String(25), primary_key=True)# 公司名称
@@ -62,7 +70,9 @@ def insert_fund(
     fund_r_mean,
     fund_treynor,
     fund_sharpe,
-    fund_jense
+    fund_jense,
+    fund_pred_week,
+    fund_pred_month
     ):
     db.session.execute(
         Fund.__table__.insert(),
@@ -89,7 +99,9 @@ def insert_fund(
                 'fund_r_mean':fund_r_mean[i],
                 'fund_treynor':fund_treynor[i],
                 'fund_sharpe':fund_sharpe[i],
-                'fund_jense':fund_jense[i]
+                'fund_jense':fund_jense[i],
+                'fund_pred_week':fund_pred_week[i],
+                'fund_pred_month':fund_pred_month[i]
             } 
             for i in range(len(fund_id))
         ]
@@ -115,9 +127,12 @@ def insert_company(company_name,company_created_time,company_fund_num,company_up
 def index_():
     return '成功!'
 
-@app.route('/all_company/<int:page_num>',methods=['post','get'])
-def get_all_company(page_num):
-    tmp=Company.query.paginate(per_page=10,page=page_num,error_out=False).items
+@app.route('/all_company/<paraname>/<int:desc>/<int:page_num>',methods=['post','get'])
+def get_all_company(paraname,desc,page_num):
+    if(desc==0):
+        tmp=Company.query.order_by(paraname).paginate(per_page=page_size,page=page_num,error_out=False).items
+    else:
+        tmp=Company.query.order_by(-getattr(Company,paraname)).paginate(per_page=page_size,page=page_num,error_out=False).items
     return {
         i+(page_num-1)*page_size:{
             'company_name':tmp[i].company_name,
@@ -128,9 +143,14 @@ def get_all_company(page_num):
         for i in range(len(tmp))
     }
 
-@app.route('/all_fund/<int:page_num>',methods=['post','get'])
-def get_all_fund(page_num):
-    tmp=Fund.query.paginate(per_page=10,page=page_num,error_out=False).items
+@app.route('/all_fund/<paraname>/<int:desc>/<int:page_num>',methods=['post','get'])
+def get_all_fund(paraname,desc,page_num):
+    if(desc==0):
+        tmp=Fund.query.order_by(paraname).paginate(per_page=page_size,page=page_num,error_out=False).items
+    else:
+        tmp=Fund.query.order_by(-getattr(Fund,paraname)).paginate(per_page=page_size,page=page_num,error_out=False).items
+
+    # tmp=Fund.query.paginate(per_page=10,page=page_num,error_out=False).items
     return {
         i+(page_num-1)*page_size:{
             "fund_id":tmp[i].fund_id,
@@ -154,7 +174,9 @@ def get_all_fund(page_num):
             'fund_r_mean':tmp[i].fund_r_mean[:5],
             'fund_treynor':tmp[i].fund_treynor[:5],
             'fund_sharpe':tmp[i].fund_sharpe[:5],
-            'fund_jense':tmp[i].fund_jense[:5]
+            'fund_jense':tmp[i].fund_jense[:5],
+            'fund_pred_week':tmp[i].fund_pred_week[:5],
+            'fund_pred_month':tmp[i].fund_pred_month[:5]
         } 
         for i in range(len(tmp))
     }
@@ -194,7 +216,9 @@ def get_fund_by_name(id):
         'fund_r_mean':tmp.fund_r_mean[:5],
         'fund_treynor':tmp.fund_treynor[:5],
         'fund_sharpe':tmp.fund_sharpe[:5],
-        'fund_jense':tmp.fund_jense[:5]
+        'fund_jense':tmp.fund_jense[:5],
+        'fund_pred_week':tmp.fund_pred_week[:5],
+        'fund_pred_month':tmp.fund_pred_month[:5]
     } 
 
 @app.route('/get_fund_count',methods=['post','get'])

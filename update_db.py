@@ -1,5 +1,5 @@
-fund_num=500
-period=31
+fund_num=4000
+period=200
 
 from app import *
 db.drop_all()
@@ -29,7 +29,7 @@ tmp2=ak.fund_em_open_fund_rank()
 tmp2.drop(columns=['近6月','近1年','近2年','近3年','今年来','自定义','手续费','序号'],inplace=True)
 tmp2.replace({'':None},inplace=True)
 tmp2.dropna(inplace=True)
-tmp2=tmp2.sample(fund_num)
+# tmp2=tmp2.sample(fund_num)
 tmp1=tmp2=tmp2.merge(tmp1,on='基金代码').reset_index(drop=True)
 tmp1=tmp1.astype('str')
 
@@ -113,3 +113,5 @@ insert_fund(
     tmp1['sharpe'].values,
     tmp1['jense'].values,
 )
+
+tmp1.to_parquet('fund_info.parquet')
